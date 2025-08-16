@@ -40,4 +40,4 @@ jobs:
         run: echo ${{ secrets.GHCR_TOKEN }} | docker login ghcr.io --username lispyclouds --password-stdin
 
       - name: Build and push image
-        run: docker buildx build --push --platform linux/amd64,linux/arm64 -t ghcr.io/bob-cd/runner-local:latest .
+        run: docker buildx build --push --platform linux/amd64,linux/arm64 -t ghcr.io/bob-cd/logger-local:latest .
