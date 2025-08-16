@@ -69,6 +69,11 @@ func get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.URL.Query().Get("follow") != "true" {
+		http.ServeFile(w, r, log)
+		return
+	}
+
 	t, err := tail.TailFile(log, tail.Config{Follow: true, ReOpen: true})
 	if err != nil {
 		errOut(w, err)
