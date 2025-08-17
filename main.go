@@ -31,8 +31,10 @@ func ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func put(w http.ResponseWriter, r *http.Request) {
-	runId := r.PathValue("runId")
-	path := filepath.Join(DIR_NAME, runId)
+	dir := filepath.Join(DIR_NAME, r.PathValue("group"), r.PathValue("name"))
+	path := filepath.Join(dir, r.PathValue("runId"))
+
+	os.MkdirAll(dir, os.ModePerm)
 
 	log, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -52,7 +54,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 }
 
 func del(w http.ResponseWriter, r *http.Request) {
-	log := filepath.Join(DIR_NAME, r.PathValue("runId"))
+	log := filepath.Join(DIR_NAME, r.PathValue("group"), r.PathValue("name"), r.PathValue("runId"))
 
 	os.Remove(log)
 
@@ -60,12 +62,12 @@ func del(w http.ResponseWriter, r *http.Request) {
 }
 
 func get(w http.ResponseWriter, r *http.Request) {
-	runId := r.PathValue("runId")
-	log := filepath.Join(DIR_NAME, runId)
+	path := r.PathValue("logPath")
+	log := filepath.Join(DIR_NAME, path)
 
 	if _, err := os.Stat(log); errors.Is(err, os.ErrNotExist) {
 		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, "Run not found: "+runId)
+		fmt.Fprint(w, "Run not found")
 		return
 	}
 
@@ -102,12 +104,12 @@ func main() {
 		port = "8002"
 	}
 	mux := http.NewServeMux()
-	path := "/bob_logs/runs/{runId}"
+	path := "/bob_logs/{group}/{name}/{runId}"
 
 	mux.HandleFunc("GET /ping", ping)
 	mux.HandleFunc("PUT "+path, put)
 	mux.HandleFunc("DELETE "+path, del)
-	mux.HandleFunc("GET "+path, get)
+	mux.HandleFunc("GET /bob_logs/{logPath...}", get)
 
 	os.Mkdir(DIR_NAME, os.ModePerm)
 
