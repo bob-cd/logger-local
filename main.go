@@ -82,14 +82,13 @@ func put(w http.ResponseWriter, r *http.Request) {
 		errOut(w, err)
 		return
 	}
+	defer log.Close()
 
 	_, err = io.Copy(log, r.Body)
 	if err != nil {
 		errOut(w, err)
 		return
 	}
-
-	log.Close()
 
 	fmt.Fprint(w, "Ok")
 }
@@ -162,6 +161,7 @@ func get(w http.ResponseWriter, r *http.Request) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		errOut(w, err)
+		return
 	}
 	defer watcher.Close()
 
