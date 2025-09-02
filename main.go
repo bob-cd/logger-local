@@ -18,7 +18,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -58,7 +57,7 @@ func streamDiff(
 			case <-ctx.Done():
 				return
 			default:
-				fmt.Fprintln(w, scanner.Text())
+				fmt.Fprintln(w, scanner.Text()) // newline is needed to signal the end of chunk
 				flusher.Flush()
 			}
 		}
@@ -154,10 +153,6 @@ func get(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	currentPos := startPos
-	ticker := time.NewTicker(100 * time.Millisecond)
-	defer ticker.Stop()
-
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		errOut(w, err)
@@ -169,6 +164,8 @@ func get(w http.ResponseWriter, r *http.Request) {
 		errOut(w, err)
 		return
 	}
+
+	currentPos := startPos
 
 	for {
 		select {
@@ -184,9 +181,6 @@ func get(w http.ResponseWriter, r *http.Request) {
 					streamDiff(file, &currentPos, w, flusher, ctx)
 				}
 			}
-		case <-ticker.C:
-			// Periodic check in case we missed a file event, needed?
-			streamDiff(file, &currentPos, w, flusher, ctx)
 		case err := <-watcher.Errors:
 			slog.Error("Watcher error", "err", err)
 		}
