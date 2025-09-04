@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -83,7 +84,13 @@ func put(w http.ResponseWriter, r *http.Request) {
 	}
 	defer log.Close()
 
-	_, err = io.Copy(log, r.Body)
+	data, err := io.ReadAll(r.Body)
+	if err != nil {
+		errOut(w, err)
+		return
+	}
+
+	_, err = log.WriteString("\n" + strings.TrimSpace(string(data)))
 	if err != nil {
 		errOut(w, err)
 		return
