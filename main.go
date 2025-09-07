@@ -90,7 +90,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = log.WriteString("\n" + strings.TrimSpace(string(data)))
+	_, err = log.WriteString(strings.TrimSpace(string(data)) + "\n")
 	if err != nil {
 		errOut(w, err)
 		return
