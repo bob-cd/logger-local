@@ -13,9 +13,7 @@ This is a simple logger which stores and serves logs from local files.
 
 #### API
 
-Here `{path}` represents `{pipeline-group}/{pipeline-name}/{run-id}`.
-
-- `GET /bob_logs/{path}`: Sends log lines if the run exists, send follow=true to stream live changes.
-- `PUT /bob_logs/{path}`: Ingests log data via PUT body for a given run.
-- `DELETE /bob_logs/{path}`: Deletes the logs for the run.
+- `GET /bob_logs/{run-id}`: Sends log lines if the run exists, send follow=true to stream live changes.
+- `PUT /bob_logs/{run-id}`: Ingests log data via PUT body for a given run.
+- `DELETE /bob_logs/{run-id}`: Deletes the logs for the run.
 - `GET /ping`: Responds with an `Ack`.

@@ -72,10 +72,12 @@ func ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func put(w http.ResponseWriter, r *http.Request) {
-	dir := filepath.Join(DIR_NAME, r.PathValue("group"), r.PathValue("name"))
-	path := filepath.Join(dir, r.PathValue("runId"))
+	if err := os.MkdirAll(DIR_NAME, os.ModePerm); err != nil {
+		errOut(w, err)
+		return
+	}
 
-	os.MkdirAll(dir, os.ModePerm)
+	path := filepath.Join(DIR_NAME, r.PathValue("runId"))
 
 	log, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -111,7 +113,7 @@ func put(w http.ResponseWriter, r *http.Request) {
 }
 
 func del(w http.ResponseWriter, r *http.Request) {
-	log := filepath.Join(DIR_NAME, r.PathValue("group"), r.PathValue("name"), r.PathValue("runId"))
+	log := filepath.Join(DIR_NAME, r.PathValue("runId"))
 
 	os.Remove(log)
 
@@ -119,7 +121,7 @@ func del(w http.ResponseWriter, r *http.Request) {
 }
 
 func get(w http.ResponseWriter, r *http.Request) {
-	path := r.PathValue("logPath")
+	path := r.PathValue("runId")
 	log := filepath.Join(DIR_NAME, path)
 
 	if _, err := os.Stat(log); errors.Is(err, os.ErrNotExist) {
@@ -211,12 +213,12 @@ func main() {
 		port = "8002"
 	}
 	mux := http.NewServeMux()
-	path := "/bob_logs/{group}/{name}/{runId}"
+	path := "/bob_logs/{runId}"
 
 	mux.HandleFunc("GET /ping", ping)
 	mux.HandleFunc("PUT "+path, put)
 	mux.HandleFunc("DELETE "+path, del)
-	mux.HandleFunc("GET /bob_logs/{logPath...}", get)
+	mux.HandleFunc("GET "+path, get)
 
 	os.Mkdir(DIR_NAME, os.ModePerm)
 
