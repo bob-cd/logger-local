@@ -72,11 +72,6 @@ func ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func put(w http.ResponseWriter, r *http.Request) {
-	if err := os.MkdirAll(DIR_NAME, os.ModePerm); err != nil {
-		errOut(w, err)
-		return
-	}
-
 	path := filepath.Join(DIR_NAME, r.PathValue("runId"))
 
 	log, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -220,7 +215,10 @@ func main() {
 	mux.HandleFunc("DELETE "+path, del)
 	mux.HandleFunc("GET "+path, get)
 
-	os.Mkdir(DIR_NAME, os.ModePerm)
+	if err := os.Mkdir(DIR_NAME, os.ModePerm); err != nil {
+		slog.Error("Error starting", "err", err)
+		os.Exit(1)
+	}
 
 	http.ListenAndServe(":"+port, mux)
 }
