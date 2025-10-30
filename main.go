@@ -215,9 +215,11 @@ func main() {
 	mux.HandleFunc("DELETE "+path, del)
 	mux.HandleFunc("GET "+path, get)
 
-	if err := os.Mkdir(DIR_NAME, os.ModePerm); err != nil {
-		slog.Error("Error starting", "err", err)
-		os.Exit(1)
+	if _, err := os.Stat(DIR_NAME); os.IsNotExist(err) {
+		if err := os.Mkdir(DIR_NAME, os.ModePerm); err != nil {
+			slog.Error("Error starting", "err", err)
+			os.Exit(1)
+		}
 	}
 
 	http.ListenAndServe(":"+port, mux)
